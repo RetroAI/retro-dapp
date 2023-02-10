@@ -1,0 +1,73 @@
+{
+  "name": "retro-dapp",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Website and backend for retro.ai",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RetroAI/retro-dapp.git"
+  },
+  "homepage": "https://retroai.github.io",
+  "bugs": {
+    "url": "https://github.com/RetroAI/retro-dapp/issues"
+  },
+  "author": "retro.ai <retro.gaming.ai@gmail.com>",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "keywords": [
+    "ai",
+    "arcade",
+    "defi",
+    "entertainment",
+    "games",
+    "nft",
+    "retro"
+  ],
+  "scripts": {
+    "audit-ci": "audit-ci --config audit-ci.json",
+    "build": "tsc && vite build",
+    "clean": "rimraf dist node_modules yarn-*.log*",
+    "deploy": "yarn build && gh-pages --branch main --repo git@github.com:retroai/retroai.github.io.git --dist dist --dotfiles",
+    "dev": "vite",
+    "format": "prettier --write . && eslint --fix .",
+    "lint": "prettier --check . && eslint .",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:ui": "vitest --ui"
+  },
+  "dependencies": {
+    "@web3-react/core": "^8.2.2",
+    "@web3-react/metamask": "^8.2.3",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.16.0",
+    "three": "^0.157.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.8.0",
+    "@types/react": "^18.2.23",
+    "@types/react-dom": "^18.2.8",
+    "@types/react-router-dom": "^5.3.3",
+    "@types/three": "^0.156.0",
+    "@typescript-eslint/eslint-plugin": "^6.7.3",
+    "@typescript-eslint/parser": "^6.7.3",
+    "@vitejs/plugin-react": "^4.1.0",
+    "@vitest/ui": "^0.34.6",
+    "@web3-react/types": "^8.2.2",
+    "audit-ci": "^6.6.1",
+    "eslint": "^8.50.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "eslint-plugin-simple-import-sort": "^10.0.0",
+    "prettier": "^3.0.3",
+    "prettier-plugin-pkg": "^0.18.0",
+    "rimraf": "^5.0.5",
+    "typescript": "^5.2.2",
+    "vite": "^4.4.9",
+    "vitest": "^0.34.6"
+  },
+  "bundleDependencies": false,
+  "target": "web"
+}

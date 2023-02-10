@@ -21,6 +21,14 @@ To build the Cartesi backend, enter the `backend/` directory and run the followi
 docker buildx bake -f docker-bake.hcl -f docker-bake.override.hcl --load
 ```
 
+To build and run the website frontend, enter the `frontend/` directory and use standard yarn commands:
+
+```bash
+yarn install
+yarn build
+yarn dev
+```
+
 ## Testing
 
 Once `make` has completed in the root folder, try running the two example learners:

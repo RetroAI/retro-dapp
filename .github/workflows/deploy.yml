@@ -1,0 +1,56 @@
+################################################################################
+#
+#  Copyright (C) 2023 retro.ai
+#  This file is part of retro-dapp - https://github.com/RetroAI/retro-dapp
+#
+#  SPDX-License-Identifier: Apache-2.0
+#  See the file LICENSE for more information.
+#
+################################################################################
+
+name: Build and Deploy
+on:
+  push:
+    branches:
+      - main
+    paths:
+      # Only run the workflow when files in frontend change
+      - 'frontend/**'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        # Set the working directory to frontend folder
+        working-directory: frontend
+
+    steps:
+    - name: Checkout 🛎️
+      # If you're using actions/checkout you should set persist-credentials
+      # to false in most cases for the deployment to work correctly
+      uses: actions/checkout@v4
+      with:
+        persist-credentials: false
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20'
+
+    - name: Install and Build
+      run: |
+        yarn install
+        yarn build
+
+    - name: Deploy to retroai.github.io 🚀
+      run: |
+        cd ..
+        git clone https://github.com/RetroAI/retroai.github.io.git deployed-repo
+        rsync -av --delete --exclude .git frontend/dist/ deployed-repo/
+        cd deployed-repo
+        git config user.name "GitHub Action"
+        git config user.email "retro.gaming.ai@gmail.com"
+        git add .
+        git commit -m "Deployed new build from retro-dapp repository"
+        git push https://${{secrets.GH_PAT}}@github.com/RetroAI/retroai.github.io.git main

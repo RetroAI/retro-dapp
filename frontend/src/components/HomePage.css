@@ -1,0 +1,27 @@
+/*
+ * Copyright (C) 2023 retro.ai
+ * This file is part of retro-dapp - https://github.com/RetroAI/retro-dapp
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ * See the file Apache-2.0.txt for more information.
+ */
+
+.homePageContainer {
+  background-color: black;
+  height: 100vh;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.showNavbarButton {
+  position: fixed;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #fff;
+  padding: 10px 20px;
+  cursor: pointer;
+  z-index: 1000; /* Ensure it appears above the canvas */
+}

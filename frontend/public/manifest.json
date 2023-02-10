@@ -1,0 +1,14 @@
+{
+  "short_name": "retro.ai",
+  "name": "retro.ai",
+  "icons": [
+    {
+      "src": "vite.svg",
+      "type": "image/svg+xml"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#ffffff",
+  "background_color": "#000000"
+}

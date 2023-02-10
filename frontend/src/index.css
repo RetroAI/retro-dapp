@@ -1,0 +1,19 @@
+/*
+ * Copyright (C) 2023 retro.ai
+ * This file is part of retro-dapp - https://github.com/RetroAI/retro-dapp
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ * See the file Apache-2.0.txt for more information.
+ */
+
+/* Reset CSS */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Arial", sans-serif;
+  line-height: 1.6;
+}

@@ -1,0 +1,15 @@
+/*
+ * Copyright (C) 2023 retro.ai
+ * This file is part of retro-dapp - https://github.com/RetroAI/retro-dapp
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ * See the file Apache-2.0.txt for more information.
+ */
+
+.blankPageContainer {
+  background-color: #8b3d3d; /* Retro shade of red */
+  height: 100vh;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
