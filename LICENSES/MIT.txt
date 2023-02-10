@@ -1,3 +1,12 @@
+Valid-License-Identifier: MIT
+SPDX-URL: https://spdx.org/licenses/MIT.html
+Usage-Guide:
+  To use the MIT license or later put the following SPDX tag/value pair
+  into a comment according to the placement guidelines in the licensing 
+  documentation:
+    SPDX-License-Identifier: MIT
+License-Text:
+
 The MIT License
 
 Copyright (c) 2017-2018 OpenAI (http://openai.com)

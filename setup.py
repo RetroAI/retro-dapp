@@ -85,7 +85,7 @@ setup(
     cmdclass={'build_ext': CMakeBuild},
     packages=['retro', 'retro.data', 'retro.data.stable', 'retro.data.experimental', 'retro.data.contrib', 'retro.scripts', 'retro.import', 'retro.examples'],
     package_data={
-        'retro': ['cores/*.json', 'cores/*_libretro*', 'VERSION.txt', 'README.md', 'LICENSES.md'],
+        'retro': ['cores/*.json', 'cores/*_libretro*', 'VERSION.txt', 'README.md', 'LICENSE.md'],
         'retro.data.stable': platform_globs,
         'retro.data.experimental': platform_globs,
         'retro.data.contrib': platform_globs,
