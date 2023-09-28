@@ -24,7 +24,6 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE RelWithDebInfo)
 endif()
 option(BUILD_TESTS "Should tests be built" ON)
-option(BUILD_UI "Should integration UI be built" OFF)
 option(BUILD_LUAJIT "Should static LuaJIT be used instead of system Lua" ON)
 option(BUILD_MANYLINUX "Should use static libraries compatible with manylinux1" OFF)
 
@@ -268,10 +267,6 @@ if(BUILD_TESTS)
     enable_testing()
     add_subdirectory(third-party/gtest/googlemock)
     add_subdirectory(tests)
-endif()
-
-if(BUILD_UI)
-    add_subdirectory(src/ui)
 endif()
 
 execute_process(COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/setup.py --version OUTPUT_VARIABLE CPACK_PACKAGE_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
