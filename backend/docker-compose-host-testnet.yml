@@ -1,0 +1,14 @@
+version: "3"
+
+services:
+  server_manager:
+    image: juztamau5/rollups-node:1.1.0
+    command: cartesi-rollups-host-runner
+    ports:
+      - "5004:5004"
+    environment:
+      - RUST_LOG=warn
+
+  advance_runner:
+    environment:
+      - SNAPSHOT_ENABLED=false

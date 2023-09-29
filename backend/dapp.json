@@ -1,0 +1,6 @@
+{
+  "fs": {
+    "files": [".env/cross", "retroai.py", "entrypoint.sh"],
+    "size": 409600
+  }
+}
