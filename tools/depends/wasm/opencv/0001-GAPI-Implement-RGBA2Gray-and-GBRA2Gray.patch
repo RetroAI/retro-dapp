@@ -1,0 +1,770 @@
+From 4bd65501cf4bb5dd8484057aaaba3d69dfaf9f2e Mon Sep 17 00:00:00 2001
+Date: Mon, 19 Oct 2020 01:27:35 -0700
+Subject: [PATCH] GAPI: Implement RGBA2Gray and GBRA2Gray
+
+---
+ modules/gapi/include/opencv2/gapi/imgproc.hpp | 40 ++++++++++
+ .../perf/common/gapi_imgproc_perf_tests.hpp   |  2 +
+ .../common/gapi_imgproc_perf_tests_inl.hpp    | 76 +++++++++++++++++++
+ .../perf/cpu/gapi_imgproc_perf_tests_cpu.cpp  | 10 +++
+ .../cpu/gapi_imgproc_perf_tests_fluid.cpp     | 10 +++
+ .../perf/gpu/gapi_imgproc_perf_tests_gpu.cpp  | 10 +++
+ modules/gapi/src/api/kernels_imgproc.cpp      | 10 +++
+ modules/gapi/src/backends/cpu/gcpuimgproc.cpp | 18 +++++
+ .../gapi/src/backends/fluid/gfluidimgproc.cpp | 49 +++++++++++-
+ .../fluid/gfluidimgproc_func.dispatch.cpp     | 14 ++++
+ .../src/backends/fluid/gfluidimgproc_func.hpp |  9 +++
+ .../fluid/gfluidimgproc_func.simd.hpp         | 46 +++++++++++
+ modules/gapi/src/backends/ocl/goclimgproc.cpp | 18 +++++
+ .../gapi/test/common/gapi_imgproc_tests.hpp   |  2 +
+ .../test/common/gapi_imgproc_tests_inl.hpp    | 38 ++++++++++
+ .../gapi/test/cpu/gapi_imgproc_tests_cpu.cpp  | 16 ++++
+ .../test/cpu/gapi_imgproc_tests_fluid.cpp     | 16 ++++
+ .../gapi/test/gpu/gapi_imgproc_tests_gpu.cpp  | 16 ++++
+ 18 files changed, 399 insertions(+), 1 deletion(-)
+
+diff --git a/modules/gapi/include/opencv2/gapi/imgproc.hpp b/modules/gapi/include/opencv2/gapi/imgproc.hpp
+index 294b3b7842..f92283ad86 100644
+--- a/modules/gapi/include/opencv2/gapi/imgproc.hpp
++++ b/modules/gapi/include/opencv2/gapi/imgproc.hpp
+@@ -240,6 +240,12 @@ namespace imgproc {
+         }
+     };
+ 
++    G_TYPED_KERNEL(GRGBA2Gray, <GMat(GMat)>, "org.opencv.imgproc.colorconvert.rgba2gray") {
++        static GMatDesc outMeta(GMatDesc in) {
++            return in.withType(CV_8U, 1);
++        }
++    };
++
+     G_TYPED_KERNEL(GRGB2GrayCustom, <GMat(GMat,float,float,float)>, "org.opencv.imgproc.colorconvert.rgb2graycustom") {
+         static GMatDesc outMeta(GMatDesc in, float, float, float) {
+             return in.withType(CV_8U, 1);
+@@ -252,6 +258,12 @@ namespace imgproc {
+         }
+     };
+ 
++    G_TYPED_KERNEL(GBGRA2Gray, <GMat(GMat)>, "org.opencv.imgproc.colorconvert.bgra2gray") {
++        static GMatDesc outMeta(GMatDesc in) {
++            return in.withType(CV_8U, 1);
++        }
++    };
++
+     G_TYPED_KERNEL(GBayerGR2RGB, <cv::GMat(cv::GMat)>, "org.opencv.imgproc.colorconvert.bayergr2rgb") {
+         static cv::GMatDesc outMeta(cv::GMatDesc in) {
+             return in.withType(CV_8U, 3);
+@@ -884,6 +896,22 @@ Resulting gray color value computed as
+  */
+ GAPI_EXPORTS GMat RGB2Gray(const GMat& src);
+ 
++//! @} gapi_filters
++
++//! @addtogroup gapi_colorconvert
++//! @{
++/** @brief Converts an image from RGBA color space to gray-scaled.
++The conventional ranges for R, G, and B channel values are 0 to 255.
++Resulting gray color value computed as
++\f[\texttt{dst} (I)= \texttt{0.299} * \texttt{src}(I).R + \texttt{0.587} * \texttt{src}(I).G  + \texttt{0.114} * \texttt{src}(I).B \f]
++
++@note Function textual ID is "org.opencv.imgproc.colorconvert.rgb2gray"
++
++@param src input image: 8-bit unsigned 4-channel image @ref CV_8UC1.
++@sa RGB2YUV
++ */
++GAPI_EXPORTS GMat RGBA2Gray(const GMat& src);
++
+ /** @overload
+ Resulting gray color value computed as
+ \f[\texttt{dst} (I)= \texttt{rY} * \texttt{src}(I).R + \texttt{gY} * \texttt{src}(I).G  + \texttt{bY} * \texttt{src}(I).B \f]
+@@ -910,6 +938,18 @@ Resulting gray color value computed as
+  */
+ GAPI_EXPORTS GMat BGR2Gray(const GMat& src);
+ 
++/** @brief Converts an image from BGRA color space to gray-scaled.
++The conventional ranges for B, G, and R channel values are 0 to 255.
++Resulting gray color value computed as
++\f[\texttt{dst} (I)= \texttt{0.114} * \texttt{src}(I).B + \texttt{0.587} * \texttt{src}(I).G  + \texttt{0.299} * \texttt{src}(I).R \f]
++
++@note Function textual ID is "org.opencv.imgproc.colorconvert.bgr2gray"
++
++@param src input image: 8-bit unsigned 4-channel image @ref CV_8UC1.
++@sa BGR2LUV
++ */
++GAPI_EXPORTS GMat BGRA2Gray(const GMat& src);
++
+ /** @brief Converts an image from RGB color space to YUV color space.
+ 
+ The function converts an input image from RGB color space to YUV.
+diff --git a/modules/gapi/perf/common/gapi_imgproc_perf_tests.hpp b/modules/gapi/perf/common/gapi_imgproc_perf_tests.hpp
+index b2591907cf..035f57aa02 100644
+--- a/modules/gapi/perf/common/gapi_imgproc_perf_tests.hpp
++++ b/modules/gapi/perf/common/gapi_imgproc_perf_tests.hpp
+@@ -43,7 +43,9 @@ class GoodFeaturesPerfTest    : public TestPerfParams<tuple<compare_vector_f<cv:
+                                                             cv::GCompileArgs>> {};
+ class EqHistPerfTest      : public TestPerfParams<tuple<compare_f, cv::Size, cv::GCompileArgs>> {};
+ class RGB2GrayPerfTest    : public TestPerfParams<tuple<compare_f, cv::Size, cv::GCompileArgs>> {};
++class RGBA2GrayPerfTest   : public TestPerfParams<tuple<compare_f, cv::Size, cv::GCompileArgs>> {};
+ class BGR2GrayPerfTest    : public TestPerfParams<tuple<compare_f, cv::Size, cv::GCompileArgs>> {};
++class BGRA2GrayPerfTest   : public TestPerfParams<tuple<compare_f, cv::Size, cv::GCompileArgs>> {};
+ class RGB2YUVPerfTest     : public TestPerfParams<tuple<compare_f, cv::Size, cv::GCompileArgs>> {};
+ class YUV2RGBPerfTest     : public TestPerfParams<tuple<compare_f, cv::Size, cv::GCompileArgs>> {};
+ class RGB2LabPerfTest     : public TestPerfParams<tuple<compare_f, cv::Size, cv::GCompileArgs>> {};
+diff --git a/modules/gapi/perf/common/gapi_imgproc_perf_tests_inl.hpp b/modules/gapi/perf/common/gapi_imgproc_perf_tests_inl.hpp
+index f71e435a2b..223f36d6c9 100644
+--- a/modules/gapi/perf/common/gapi_imgproc_perf_tests_inl.hpp
++++ b/modules/gapi/perf/common/gapi_imgproc_perf_tests_inl.hpp
+@@ -826,6 +826,44 @@ PERF_TEST_P_(RGB2GrayPerfTest, TestPerformance)
+ 
+ //------------------------------------------------------------------------------
+ 
++PERF_TEST_P_(RGBA2GrayPerfTest, TestPerformance)
++{
++    compare_f cmpF = get<0>(GetParam());
++    Size sz = get<1>(GetParam());
++    cv::GCompileArgs compile_args = get<2>(GetParam());
++
++    initMatrixRandN(CV_8UC4, sz, CV_8UC1, false);
++
++    // OpenCV code /////////////////////////////////////////////////////////////
++    {
++        cv::cvtColor(in_mat1, out_mat_ocv, cv::COLOR_RGBA2GRAY);
++    }
++
++    // G-API code //////////////////////////////////////////////////////////////
++    cv::GMat in;
++    auto out = cv::gapi::RGBA2Gray(in);
++    cv::GComputation c(in, out);
++
++    // Warm-up graph engine:
++    c.apply(in_mat1, out_mat_gapi, std::move(compile_args));
++
++    TEST_CYCLE()
++    {
++        c.apply(in_mat1, out_mat_gapi);
++    }
++
++    // Comparison //////////////////////////////////////////////////////////////
++    {
++        EXPECT_TRUE(cmpF(out_mat_gapi, out_mat_ocv));
++        EXPECT_EQ(out_mat_gapi.size(), sz);
++    }
++
++    SANITY_CHECK_NOTHING();
++
++}
++
++//------------------------------------------------------------------------------
++
+ PERF_TEST_P_(BGR2GrayPerfTest, TestPerformance)
+ {
+     compare_f cmpF = get<0>(GetParam());
+@@ -864,6 +902,44 @@ PERF_TEST_P_(BGR2GrayPerfTest, TestPerformance)
+ 
+ //------------------------------------------------------------------------------
+ 
++PERF_TEST_P_(BGRA2GrayPerfTest, TestPerformance)
++{
++    compare_f cmpF = get<0>(GetParam());
++    Size sz = get<1>(GetParam());
++    cv::GCompileArgs compile_args = get<2>(GetParam());
++
++    initMatrixRandN(CV_8UC4, sz, CV_8UC1, false);
++
++    // OpenCV code /////////////////////////////////////////////////////////////
++    {
++        cv::cvtColor(in_mat1, out_mat_ocv, cv::COLOR_BGRA2GRAY);
++    }
++
++    // G-API code //////////////////////////////////////////////////////////////
++    cv::GMat in;
++    auto out = cv::gapi::BGRA2Gray(in);
++    cv::GComputation c(in, out);
++
++    // Warm-up graph engine:
++    c.apply(in_mat1, out_mat_gapi, std::move(compile_args));
++
++    TEST_CYCLE()
++    {
++        c.apply(in_mat1, out_mat_gapi);
++    }
++
++    // Comparison //////////////////////////////////////////////////////////////
++    {
++        EXPECT_TRUE(cmpF(out_mat_gapi, out_mat_ocv));
++        EXPECT_EQ(out_mat_gapi.size(), sz);
++    }
++
++    SANITY_CHECK_NOTHING();
++
++}
++
++//------------------------------------------------------------------------------
++
+ PERF_TEST_P_(RGB2YUVPerfTest, TestPerformance)
+ {
+     compare_f cmpF = get<0>(GetParam());
+diff --git a/modules/gapi/perf/cpu/gapi_imgproc_perf_tests_cpu.cpp b/modules/gapi/perf/cpu/gapi_imgproc_perf_tests_cpu.cpp
+index 4de1b18308..ebda2ac3b1 100644
+--- a/modules/gapi/perf/cpu/gapi_imgproc_perf_tests_cpu.cpp
++++ b/modules/gapi/perf/cpu/gapi_imgproc_perf_tests_cpu.cpp
+@@ -184,11 +184,21 @@ INSTANTIATE_TEST_CASE_P(RGB2GrayPerfTestCPU, RGB2GrayPerfTest,
+         Values(szVGA, sz720p, sz1080p),
+         Values(cv::compile_args(IMGPROC_CPU))));
+ 
++INSTANTIATE_TEST_CASE_P(RGBA2GrayPerfTestCPU, RGBA2GrayPerfTest,
++    Combine(Values(AbsExact().to_compare_f()),
++        Values(szVGA, sz720p, sz1080p),
++        Values(cv::compile_args(IMGPROC_CPU))));
++
+ INSTANTIATE_TEST_CASE_P(BGR2GrayPerfTestCPU, BGR2GrayPerfTest,
+     Combine(Values(AbsExact().to_compare_f()),
+         Values(szVGA, sz720p, sz1080p),
+         Values(cv::compile_args(IMGPROC_CPU))));
+ 
++INSTANTIATE_TEST_CASE_P(BGRA2GrayPerfTestCPU, BGRA2GrayPerfTest,
++    Combine(Values(AbsExact().to_compare_f()),
++        Values(szVGA, sz720p, sz1080p),
++        Values(cv::compile_args(IMGPROC_CPU))));
++
+ INSTANTIATE_TEST_CASE_P(RGB2YUVPerfTestCPU, RGB2YUVPerfTest,
+     Combine(Values(AbsExact().to_compare_f()),
+         Values(szVGA, sz720p, sz1080p),
+diff --git a/modules/gapi/perf/cpu/gapi_imgproc_perf_tests_fluid.cpp b/modules/gapi/perf/cpu/gapi_imgproc_perf_tests_fluid.cpp
+index 1ccd763099..0d96ce212d 100644
+--- a/modules/gapi/perf/cpu/gapi_imgproc_perf_tests_fluid.cpp
++++ b/modules/gapi/perf/cpu/gapi_imgproc_perf_tests_fluid.cpp
+@@ -148,11 +148,21 @@ INSTANTIATE_TEST_CASE_P(RGB2GrayPerfTestFluid, RGB2GrayPerfTest,
+             Values(szVGA, sz720p, sz1080p),
+             Values(cv::compile_args(IMGPROC_FLUID))));
+ 
++INSTANTIATE_TEST_CASE_P(RGBA2GrayPerfTestFluid, RGBA2GrayPerfTest,
++    Combine(Values(ToleranceColor(1e-3).to_compare_f()),
++            Values(szVGA, sz720p, sz1080p),
++            Values(cv::compile_args(IMGPROC_FLUID))));
++
+ INSTANTIATE_TEST_CASE_P(BGR2GrayPerfTestFluid, BGR2GrayPerfTest,
+     Combine(Values(ToleranceColor(1e-3).to_compare_f()),
+             Values(szVGA, sz720p, sz1080p),
+             Values(cv::compile_args(IMGPROC_FLUID))));
+ 
++INSTANTIATE_TEST_CASE_P(BGRA2GrayPerfTestFluid, BGRA2GrayPerfTest,
++    Combine(Values(ToleranceColor(1e-3).to_compare_f()),
++            Values(szVGA, sz720p, sz1080p),
++            Values(cv::compile_args(IMGPROC_FLUID))));
++
+ INSTANTIATE_TEST_CASE_P(RGB2YUVPerfTestFluid, RGB2YUVPerfTest,
+     Combine(Values(ToleranceColor(1e-3).to_compare_f()),
+             Values(szVGA, sz720p, sz1080p),
+diff --git a/modules/gapi/perf/gpu/gapi_imgproc_perf_tests_gpu.cpp b/modules/gapi/perf/gpu/gapi_imgproc_perf_tests_gpu.cpp
+index 1f4f3883d1..2b5fdcf19b 100644
+--- a/modules/gapi/perf/gpu/gapi_imgproc_perf_tests_gpu.cpp
++++ b/modules/gapi/perf/gpu/gapi_imgproc_perf_tests_gpu.cpp
+@@ -164,11 +164,21 @@ INSTANTIATE_TEST_CASE_P(RGB2GrayPerfTestGPU, RGB2GrayPerfTest,
+                         Values(szVGA, sz720p, sz1080p),
+                         Values(cv::compile_args(IMGPROC_GPU))));
+ 
++INSTANTIATE_TEST_CASE_P(RGBA2GrayPerfTestGPU, RGBA2GrayPerfTest,
++                        Combine(Values(ToleranceColor(1e-3).to_compare_f()),
++                        Values(szVGA, sz720p, sz1080p),
++                        Values(cv::compile_args(IMGPROC_GPU))));
++
+ INSTANTIATE_TEST_CASE_P(BGR2GrayPerfTestGPU, BGR2GrayPerfTest,
+                         Combine(Values(ToleranceColor(1e-3).to_compare_f()),
+                         Values(szVGA, sz720p, sz1080p),
+                         Values(cv::compile_args(IMGPROC_GPU))));
+ 
++INSTANTIATE_TEST_CASE_P(BGRA2GrayPerfTestGPU, BGRA2GrayPerfTest,
++                        Combine(Values(ToleranceColor(1e-3).to_compare_f()),
++                        Values(szVGA, sz720p, sz1080p),
++                        Values(cv::compile_args(IMGPROC_GPU))));
++
+ INSTANTIATE_TEST_CASE_P(RGB2YUVPerfTestGPU, RGB2YUVPerfTest,
+                         Combine(Values(ToleranceColor(1e-3).to_compare_f()),
+                         Values(szVGA, sz720p, sz1080p),
+diff --git a/modules/gapi/src/api/kernels_imgproc.cpp b/modules/gapi/src/api/kernels_imgproc.cpp
+index 652f83935f..1d980b36a2 100644
+--- a/modules/gapi/src/api/kernels_imgproc.cpp
++++ b/modules/gapi/src/api/kernels_imgproc.cpp
+@@ -130,11 +130,21 @@ GMat RGB2Gray(const GMat& src, float rY, float gY, float bY)
+     return imgproc::GRGB2GrayCustom::on(src, rY, gY, bY);
+ }
+ 
++GMat RGBA2Gray(const GMat& src)
++{
++    return imgproc::GRGBA2Gray::on(src);
++}
++
+ GMat BGR2Gray(const GMat& src)
+ {
+     return imgproc::GBGR2Gray::on(src);
+ }
+ 
++GMat BGRA2Gray(const GMat& src)
++{
++    return imgproc::GBGRA2Gray::on(src);
++}
++
+ GMat RGB2YUV(const GMat& src)
+ {
+     return imgproc::GRGB2YUV::on(src);
+diff --git a/modules/gapi/src/backends/cpu/gcpuimgproc.cpp b/modules/gapi/src/backends/cpu/gcpuimgproc.cpp
+index c07ed6785c..f25e6f5c9c 100644
+--- a/modules/gapi/src/backends/cpu/gcpuimgproc.cpp
++++ b/modules/gapi/src/backends/cpu/gcpuimgproc.cpp
+@@ -331,6 +331,14 @@ GAPI_OCV_KERNEL(GCPURGB2Gray, cv::gapi::imgproc::GRGB2Gray)
+     }
+ };
+ 
++GAPI_OCV_KERNEL(GCPURGBA2Gray, cv::gapi::imgproc::GRGBA2Gray)
++{
++    static void run(const cv::Mat& in, cv::Mat &out)
++    {
++        cv::cvtColor(in, out, cv::COLOR_RGBA2GRAY);
++    }
++};
++
+ GAPI_OCV_KERNEL(GCPUBGR2Gray, cv::gapi::imgproc::GBGR2Gray)
+ {
+     static void run(const cv::Mat& in, cv::Mat &out)
+@@ -339,6 +347,14 @@ GAPI_OCV_KERNEL(GCPUBGR2Gray, cv::gapi::imgproc::GBGR2Gray)
+     }
+ };
+ 
++GAPI_OCV_KERNEL(GCPUBGRA2Gray, cv::gapi::imgproc::GBGRA2Gray)
++{
++    static void run(const cv::Mat& in, cv::Mat &out)
++    {
++        cv::cvtColor(in, out, cv::COLOR_BGRA2GRAY);
++    }
++};
++
+ GAPI_OCV_KERNEL(GCPURGB2GrayCustom, cv::gapi::imgproc::GRGB2GrayCustom)
+ {
+     static void run(const cv::Mat& in, float rY, float bY, float gY, cv::Mat &out)
+@@ -500,7 +516,9 @@ cv::gapi::GKernelPackage cv::gapi::imgproc::cpu::kernels()
+         , GCPUYUV2BGR
+         , GCPULUV2BGR
+         , GCPUBGR2Gray
++        , GCPUBGRA2Gray
+         , GCPURGB2Gray
++        , GCPURGBA2Gray
+         , GCPURGB2GrayCustom
+         , GCPUBayerGR2RGB
+         , GCPURGB2HSV
+diff --git a/modules/gapi/src/backends/fluid/gfluidimgproc.cpp b/modules/gapi/src/backends/fluid/gfluidimgproc.cpp
+index 7ddf91e122..4cc34a9064 100644
+--- a/modules/gapi/src/backends/fluid/gfluidimgproc.cpp
++++ b/modules/gapi/src/backends/fluid/gfluidimgproc.cpp
+@@ -37,7 +37,7 @@ namespace fluid {
+ 
+ //----------------------------------
+ //
+-// Fluid kernels: RGB2Gray, BGR2Gray
++// Fluid kernels: RGB2Gray, BGR2Gray, RGB2AGray, BGRA2Gray
+ //
+ //----------------------------------
+ 
+@@ -70,6 +70,25 @@ static void run_rgb2gray(Buffer &dst, const View &src, float coef_r, float coef_
+     run_rgb2gray_impl(out, in, width, coef_r, coef_g, coef_b);
+ }
+ 
++static void run_rgba2gray(Buffer &dst, const View &src, float coef_r, float coef_g, float coef_b)
++{
++    GAPI_Assert(src.meta().depth == CV_8U);
++    GAPI_Assert(dst.meta().depth == CV_8U);
++    GAPI_Assert(src.meta().chan == 4);
++    GAPI_Assert(dst.meta().chan == 1);
++    GAPI_Assert(src.length() == dst.length());
++
++    GAPI_Assert(coef_r < 1 && coef_g < 1 && coef_b < 1);
++    GAPI_Assert(std::abs(coef_r + coef_g + coef_b - 1) < 0.001);
++
++    const auto *in  = src.InLine<uchar>(0);
++          auto *out = dst.OutLine<uchar>();
++
++    int width = dst.length();
++
++    run_rgba2gray_impl(out, in, width, coef_r, coef_g, coef_b);
++}
++
+ GAPI_FLUID_KERNEL(GFluidRGB2GrayCustom, cv::gapi::imgproc::GRGB2GrayCustom, false)
+ {
+     static const int Window = 1;
+@@ -93,6 +112,19 @@ GAPI_FLUID_KERNEL(GFluidRGB2Gray, cv::gapi::imgproc::GRGB2Gray, false)
+     }
+ };
+ 
++GAPI_FLUID_KERNEL(GFluidRGBA2Gray, cv::gapi::imgproc::GRGBA2Gray, false)
++{
++    static const int Window = 1;
++
++    static void run(const View &src, Buffer &dst)
++    {
++        float coef_r = coef_rgb2yuv_bt601[0];
++        float coef_g = coef_rgb2yuv_bt601[1];
++        float coef_b = coef_rgb2yuv_bt601[2];
++        run_rgba2gray(dst, src, coef_r, coef_g, coef_b);
++    }
++};
++
+ GAPI_FLUID_KERNEL(GFluidBGR2Gray, cv::gapi::imgproc::GBGR2Gray, false)
+ {
+     static const int Window = 1;
+@@ -106,6 +138,19 @@ GAPI_FLUID_KERNEL(GFluidBGR2Gray, cv::gapi::imgproc::GBGR2Gray, false)
+     }
+ };
+ 
++GAPI_FLUID_KERNEL(GFluidBGRA2Gray, cv::gapi::imgproc::GBGRA2Gray, false)
++{
++    static const int Window = 1;
++
++    static void run(const View &src, Buffer &dst)
++    {
++        float coef_r = coef_rgb2yuv_bt601[0];
++        float coef_g = coef_rgb2yuv_bt601[1];
++        float coef_b = coef_rgb2yuv_bt601[2];
++        run_rgba2gray(dst, src, coef_b, coef_g, coef_r);
++    }
++};
++
+ //--------------------------------------
+ //
+ // Fluid kernels: RGB-to-YUV, YUV-to-RGB
+@@ -1831,7 +1876,9 @@ cv::gapi::GKernelPackage cv::gapi::imgproc::fluid::kernels()
+ 
+     return cv::gapi::kernels
+     <   GFluidBGR2Gray
++      , GFluidBGRA2Gray
+       , GFluidRGB2Gray
++      , GFluidRGBA2Gray
+       , GFluidRGB2GrayCustom
+       , GFluidRGB2YUV
+       , GFluidYUV2RGB
+diff --git a/modules/gapi/src/backends/fluid/gfluidimgproc_func.dispatch.cpp b/modules/gapi/src/backends/fluid/gfluidimgproc_func.dispatch.cpp
+index 7854d3e988..1775763d08 100644
+--- a/modules/gapi/src/backends/fluid/gfluidimgproc_func.dispatch.cpp
++++ b/modules/gapi/src/backends/fluid/gfluidimgproc_func.dispatch.cpp
+@@ -41,6 +41,20 @@ void run_rgb2gray_impl(uchar out[], const uchar in[], int width,
+         CV_CPU_DISPATCH_MODES_ALL);
+ }
+ 
++//----------------------------------
++//
++// Fluid kernels: RGBA2Gray, BGRA2Gray
++//
++//----------------------------------
++
++void run_rgba2gray_impl(uchar out[], const uchar in[], int width,
++                        float coef_r, float coef_g, float coef_b)
++{
++    CV_CPU_DISPATCH(run_rgba2gray_impl,
++        (out, in, width, coef_r, coef_g, coef_b),
++        CV_CPU_DISPATCH_MODES_ALL);
++}
++
+ //--------------------------------------
+ //
+ // Fluid kernels: RGB-to-HSV
+diff --git a/modules/gapi/src/backends/fluid/gfluidimgproc_func.hpp b/modules/gapi/src/backends/fluid/gfluidimgproc_func.hpp
+index 79715d1754..00b521fc50 100644
+--- a/modules/gapi/src/backends/fluid/gfluidimgproc_func.hpp
++++ b/modules/gapi/src/backends/fluid/gfluidimgproc_func.hpp
+@@ -23,6 +23,15 @@ namespace fluid {
+ void run_rgb2gray_impl(uchar out[], const uchar in[], int width,
+                        float coef_r, float coef_g, float coef_b);
+ 
++//----------------------------------
++//
++// Fluid kernels: RGBA2Gray, BGRA2Gray
++//
++//----------------------------------
++
++void run_rgba2gray_impl(uchar out[], const uchar in[], int width,
++                        float coef_r, float coef_g, float coef_b);
++
+ //--------------------------------------
+ //
+ // Fluid kernels: RGB-to-HSV
+diff --git a/modules/gapi/src/backends/fluid/gfluidimgproc_func.simd.hpp b/modules/gapi/src/backends/fluid/gfluidimgproc_func.simd.hpp
+index 9766cf7cc6..0ab68fd373 100644
+--- a/modules/gapi/src/backends/fluid/gfluidimgproc_func.simd.hpp
++++ b/modules/gapi/src/backends/fluid/gfluidimgproc_func.simd.hpp
+@@ -45,6 +45,15 @@ CV_CPU_OPTIMIZATION_NAMESPACE_BEGIN
+ void run_rgb2gray_impl(uchar out[], const uchar in[], int width,
+                        float coef_r, float coef_g, float coef_b);
+ 
++//----------------------------------
++//
++// Fluid kernels: RGBA2Gray, BGRA2Gray
++//
++//----------------------------------
++
++void run_rgba2gray_impl(uchar out[], const uchar in[], int width,
++                        float coef_r, float coef_g, float coef_b);
++
+ //--------------------------------------
+ //
+ // Fluid kernels: RGB-to-HSV
+@@ -285,6 +294,43 @@ void run_rgb2gray_impl(uchar out[], const uchar in[], int width,
+     }
+ }
+ 
++//----------------------------------
++//
++// Fluid kernels: RGBA2Gray, BGRA2Gray
++//
++//----------------------------------
++
++void run_rgba2gray_impl(uchar out[], const uchar in[], int width,
++                        float coef_r, float coef_g, float coef_b)
++{
++    // assume:
++    // - coefficients are less than 1
++    // - and their sum equals 1
++
++    constexpr int unity = 1 << 16;  // Q0.0.16 inside ushort:
++    ushort rc = static_cast<ushort>(coef_r * unity + 0.5f);
++    ushort gc = static_cast<ushort>(coef_g * unity + 0.5f);
++    ushort bc = static_cast<ushort>(coef_b * unity + 0.5f);
++
++    GAPI_Assert(rc + gc + bc <= unity);
++    GAPI_Assert(rc + gc + bc >= USHRT_MAX);
++
++#if CV_SIMD
++    // TODO
++#endif
++
++    for (int w=0; w < width; w++)
++    {
++        uchar r = in[4*w    ];
++        uchar g = in[4*w + 1];
++        uchar b = in[4*w + 2];
++
++        static const int half = 1 << 15;  // Q0.0.16
++        ushort y = (r*rc + b*bc + g*gc + half) >> 16;
++        out[w] = static_cast<uchar>(y);
++    }
++}
++
+ //--------------------------------------
+ //
+ // Fluid kernels: RGB-to-HSV
+diff --git a/modules/gapi/src/backends/ocl/goclimgproc.cpp b/modules/gapi/src/backends/ocl/goclimgproc.cpp
+index 07069ae83e..ff597c820a 100644
+--- a/modules/gapi/src/backends/ocl/goclimgproc.cpp
++++ b/modules/gapi/src/backends/ocl/goclimgproc.cpp
+@@ -245,6 +245,14 @@ GAPI_OCL_KERNEL(GOCLRGB2Gray, cv::gapi::imgproc::GRGB2Gray)
+     }
+ };
+ 
++GAPI_OCL_KERNEL(GOCLRGBA2Gray, cv::gapi::imgproc::GRGBA2Gray)
++{
++    static void run(const cv::UMat& in, cv::UMat &out)
++    {
++        cv::cvtColor(in, out, cv::COLOR_RGBA2GRAY);
++    }
++};
++
+ GAPI_OCL_KERNEL(GOCLBGR2Gray, cv::gapi::imgproc::GBGR2Gray)
+ {
+     static void run(const cv::UMat& in, cv::UMat &out)
+@@ -253,6 +261,14 @@ GAPI_OCL_KERNEL(GOCLBGR2Gray, cv::gapi::imgproc::GBGR2Gray)
+     }
+ };
+ 
++GAPI_OCL_KERNEL(GOCLBGRA2Gray, cv::gapi::imgproc::GBGRA2Gray)
++{
++    static void run(const cv::UMat& in, cv::UMat &out)
++    {
++        cv::cvtColor(in, out, cv::COLOR_BGRA2GRAY);
++    }
++};
++
+ GAPI_OCL_KERNEL(GOCLRGB2GrayCustom, cv::gapi::imgproc::GRGB2GrayCustom)
+ {
+     //TODO: avoid copy
+@@ -290,7 +306,9 @@ cv::gapi::GKernelPackage cv::gapi::imgproc::ocl::kernels()
+         , GOCLYUV2BGR
+         , GOCLLUV2BGR
+         , GOCLBGR2Gray
++        , GOCLBGRA2Gray
+         , GOCLRGB2Gray
++        , GOCLRGBA2Gray
+         , GOCLRGB2GrayCustom
+         >();
+     return pkg;
+diff --git a/modules/gapi/test/common/gapi_imgproc_tests.hpp b/modules/gapi/test/common/gapi_imgproc_tests.hpp
+index 38a02985e7..8e19467476 100644
+--- a/modules/gapi/test/common/gapi_imgproc_tests.hpp
++++ b/modules/gapi/test/common/gapi_imgproc_tests.hpp
+@@ -66,7 +66,9 @@ GAPI_TEST_FIXTURE_SPEC_PARAMS(GoodFeaturesTest,
+                               blockSize, useHarrisDetector)
+ GAPI_TEST_FIXTURE(BGR2RGBTest, initMatrixRandN, FIXTURE_API(CompareMats), 1, cmpF)
+ GAPI_TEST_FIXTURE(RGB2GrayTest, initMatrixRandN, FIXTURE_API(CompareMats), 1, cmpF)
++GAPI_TEST_FIXTURE(RGBA2GrayTest, initMatrixRandN, FIXTURE_API(CompareMats), 1, cmpF)
+ GAPI_TEST_FIXTURE(BGR2GrayTest, initMatrixRandN, FIXTURE_API(CompareMats), 1, cmpF)
++GAPI_TEST_FIXTURE(BGRA2GrayTest, initMatrixRandN, FIXTURE_API(CompareMats), 1, cmpF)
+ GAPI_TEST_FIXTURE(RGB2YUVTest, initMatrixRandN, FIXTURE_API(CompareMats), 1, cmpF)
+ GAPI_TEST_FIXTURE(BGR2I420Test, initMatrixRandN, FIXTURE_API(CompareMats), 1, cmpF)
+ GAPI_TEST_FIXTURE(RGB2I420Test, initMatrixRandN, FIXTURE_API(CompareMats), 1, cmpF)
+diff --git a/modules/gapi/test/common/gapi_imgproc_tests_inl.hpp b/modules/gapi/test/common/gapi_imgproc_tests_inl.hpp
+index 95728e87b7..8cf69f737a 100644
+--- a/modules/gapi/test/common/gapi_imgproc_tests_inl.hpp
++++ b/modules/gapi/test/common/gapi_imgproc_tests_inl.hpp
+@@ -485,6 +485,25 @@ TEST_P(RGB2GrayTest, AccuracyTest)
+     }
+ }
+ 
++TEST_P(RGBA2GrayTest, AccuracyTest)
++{
++    // G-API code //////////////////////////////////////////////////////////////
++    cv::GMat in;
++    auto out = cv::gapi::RGBA2Gray(in);
++
++    cv::GComputation c(in, out);
++    c.apply(in_mat1, out_mat_gapi, getCompileArgs());
++    // OpenCV code /////////////////////////////////////////////////////////////
++    {
++        cv::cvtColor(in_mat1, out_mat_ocv, cv::COLOR_RGBA2GRAY);
++    }
++    // Comparison //////////////////////////////////////////////////////////////
++    {
++        EXPECT_TRUE(cmpF(out_mat_gapi, out_mat_ocv));
++        EXPECT_EQ(out_mat_gapi.size(), sz);
++    }
++}
++
+ TEST_P(BGR2GrayTest, AccuracyTest)
+ {
+     // G-API code //////////////////////////////////////////////////////////////
+@@ -504,6 +523,25 @@ TEST_P(BGR2GrayTest, AccuracyTest)
+     }
+ }
+ 
++TEST_P(BGRA2GrayTest, AccuracyTest)
++{
++    // G-API code //////////////////////////////////////////////////////////////
++    cv::GMat in;
++    auto out = cv::gapi::BGRA2Gray(in);
++
++    cv::GComputation c(in, out);
++    c.apply(in_mat1, out_mat_gapi, getCompileArgs());
++    // OpenCV code /////////////////////////////////////////////////////////////
++    {
++        cv::cvtColor(in_mat1, out_mat_ocv, cv::COLOR_BGRA2GRAY);
++    }
++    // Comparison //////////////////////////////////////////////////////////////
++    {
++        EXPECT_TRUE(cmpF(out_mat_gapi, out_mat_ocv));
++        EXPECT_EQ(out_mat_gapi.size(), sz);
++    }
++}
++
+ TEST_P(RGB2YUVTest, AccuracyTest)
+ {
+     // G-API code //////////////////////////////////////////////////////////////
+diff --git a/modules/gapi/test/cpu/gapi_imgproc_tests_cpu.cpp b/modules/gapi/test/cpu/gapi_imgproc_tests_cpu.cpp
+index e7f9667096..949097a26b 100644
+--- a/modules/gapi/test/cpu/gapi_imgproc_tests_cpu.cpp
++++ b/modules/gapi/test/cpu/gapi_imgproc_tests_cpu.cpp
+@@ -257,6 +257,14 @@ INSTANTIATE_TEST_CASE_P(RGB2GrayTestCPU, RGB2GrayTest,
+                                 Values(IMGPROC_CPU),
+                                 Values(AbsExact().to_compare_obj())));
+ 
++INSTANTIATE_TEST_CASE_P(RGBA2GrayTestCPU, RGBA2GrayTest,
++                        Combine(Values(CV_8UC4),
++                                Values(cv::Size(1280, 720),
++                                       cv::Size(640, 480)),
++                                Values(CV_8UC1),
++                                Values(IMGPROC_CPU),
++                                Values(AbsExact().to_compare_obj())));
++
+ INSTANTIATE_TEST_CASE_P(BGR2GrayTestCPU, BGR2GrayTest,
+                         Combine(Values(CV_8UC3),
+                                 Values(cv::Size(1280, 720),
+@@ -265,6 +273,14 @@ INSTANTIATE_TEST_CASE_P(BGR2GrayTestCPU, BGR2GrayTest,
+                                 Values(IMGPROC_CPU),
+                                 Values(AbsExact().to_compare_obj())));
+ 
++INSTANTIATE_TEST_CASE_P(BGRA2GrayTestCPU, BGRA2GrayTest,
++                        Combine(Values(CV_8UC4),
++                                Values(cv::Size(1280, 720),
++                                       cv::Size(640, 480)),
++                                Values(CV_8UC1),
++                                Values(IMGPROC_CPU),
++                                Values(AbsExact().to_compare_obj())));
++
+ INSTANTIATE_TEST_CASE_P(RGB2YUVTestCPU, RGB2YUVTest,
+                         Combine(Values(CV_8UC3),
+                                 Values(cv::Size(1280, 720),
+diff --git a/modules/gapi/test/cpu/gapi_imgproc_tests_fluid.cpp b/modules/gapi/test/cpu/gapi_imgproc_tests_fluid.cpp
+index 4e847825f1..cea5671508 100644
+--- a/modules/gapi/test/cpu/gapi_imgproc_tests_fluid.cpp
++++ b/modules/gapi/test/cpu/gapi_imgproc_tests_fluid.cpp
+@@ -24,6 +24,14 @@ INSTANTIATE_TEST_CASE_P(RGB2GrayTestFluid, RGB2GrayTest,
+                                 Values(IMGPROC_FLUID),
+                                 Values(ToleranceColor(1e-3).to_compare_obj())));
+ 
++INSTANTIATE_TEST_CASE_P(RGBA2GrayTestFluid, RGBA2GrayTest,
++                        Combine(Values(CV_8UC4),
++                                Values(cv::Size(1280, 720),
++                                       cv::Size(640, 480)),
++                                Values(CV_8UC1),
++                                Values(IMGPROC_FLUID),
++                                Values(ToleranceColor(1e-3).to_compare_obj())));
++
+ INSTANTIATE_TEST_CASE_P(BGR2GrayTestFluid, BGR2GrayTest,
+                         Combine(Values(CV_8UC3),
+                                 Values(cv::Size(1280, 720),
+@@ -32,6 +40,14 @@ INSTANTIATE_TEST_CASE_P(BGR2GrayTestFluid, BGR2GrayTest,
+                                 Values(IMGPROC_FLUID),
+                                 Values(ToleranceColor(1e-3).to_compare_obj())));
+ 
++INSTANTIATE_TEST_CASE_P(BGRA2GrayTestFluid, BGRA2GrayTest,
++                        Combine(Values(CV_8UC4),
++                                Values(cv::Size(1280, 720),
++                                       cv::Size(640, 480)),
++                                Values(CV_8UC1),
++                                Values(IMGPROC_FLUID),
++                                Values(ToleranceColor(1e-3).to_compare_obj())));
++
+ INSTANTIATE_TEST_CASE_P(RGB2YUVTestFluid, RGB2YUVTest,
+                         Combine(Values(CV_8UC3),
+                                 Values(cv::Size(1280, 720),
+diff --git a/modules/gapi/test/gpu/gapi_imgproc_tests_gpu.cpp b/modules/gapi/test/gpu/gapi_imgproc_tests_gpu.cpp
+index 7d9bd761a1..5377335e2e 100644
+--- a/modules/gapi/test/gpu/gapi_imgproc_tests_gpu.cpp
++++ b/modules/gapi/test/gpu/gapi_imgproc_tests_gpu.cpp
+@@ -203,6 +203,14 @@ INSTANTIATE_TEST_CASE_P(RGB2GrayTestGPU, RGB2GrayTest,
+                                 Values(IMGPROC_GPU),
+                                 Values(ToleranceColor(1e-3).to_compare_obj())));
+ 
++INSTANTIATE_TEST_CASE_P(RGBA2GrayTestGPU, RGBA2GrayTest,
++                        Combine(Values(CV_8UC4),
++                                Values(cv::Size(1280, 720),
++                                       cv::Size(640, 480)),
++                                Values(CV_8UC1),
++                                Values(IMGPROC_GPU),
++                                Values(ToleranceColor(1e-3).to_compare_obj())));
++
+ INSTANTIATE_TEST_CASE_P(BGR2GrayTestGPU, BGR2GrayTest,
+                         Combine(Values(CV_8UC3),
+                                 Values(cv::Size(1280, 720),
+@@ -211,6 +219,14 @@ INSTANTIATE_TEST_CASE_P(BGR2GrayTestGPU, BGR2GrayTest,
+                                 Values(IMGPROC_GPU),
+                                 Values(ToleranceColor(1e-3).to_compare_obj())));
+ 
++INSTANTIATE_TEST_CASE_P(BGRA2GrayTestGPU, BGRA2GrayTest,
++                        Combine(Values(CV_8UC4),
++                                Values(cv::Size(1280, 720),
++                                       cv::Size(640, 480)),
++                                Values(CV_8UC1),
++                                Values(IMGPROC_GPU),
++                                Values(ToleranceColor(1e-3).to_compare_obj())));
++
+ INSTANTIATE_TEST_CASE_P(RGB2YUVTestGPU, RGB2YUVTest,
+                         Combine(Values(CV_8UC3),
+                                 Values(cv::Size(1280, 720),
+-- 
+2.17.1
+

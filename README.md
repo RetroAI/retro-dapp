@@ -8,7 +8,21 @@ Please note that ROMs are not included and you must obtain them yourself. Most R
 
 ## Building
 
-In the root folder, execute the following commands:
+To build the WASM dependencies, run the build script in the `tools/` directory:
+
+```bash
+./tools/build-depends.sh all
+```
+
+To build and run the website frontend, enter the `frontend/` directory and use standard yarn commands:
+
+```bash
+yarn install
+yarn build
+yarn dev
+```
+
+To build the OpenAI Gym Retro library, in the root folder, execute the following commands:
 
 ```bash
 cmake .
@@ -19,14 +33,6 @@ To build the Cartesi backend, enter the `backend/` directory and run the followi
 
 ```bash
 docker buildx bake -f docker-bake.hcl -f docker-bake.override.hcl --load
-```
-
-To build and run the website frontend, enter the `frontend/` directory and use standard yarn commands:
-
-```bash
-yarn install
-yarn build
-yarn dev
 ```
 
 ## Testing
