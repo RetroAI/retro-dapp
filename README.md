@@ -1,42 +1,54 @@
-**Status:** Maintenance (expect bug fixes and minor updates)
+# retro-dapp
 
-# Gym Retro
-
-Gym Retro lets you turn classic video games into [Gym](https://gym.openai.com/) environments for reinforcement learning and comes with integrations for ~1000 games.  It uses various emulators that support the [Libretro API](https://www.libretro.com/index.php/api/), making it fairly easy to add new emulators.
-
-Supported platforms:
-
-- Windows 7, 8, 10
-- macOS 10.13 (High Sierra), 10.14 (Mojave)
-- Linux (manylinux1)
-
-CPU with `SSSE3` or better
-
-Supported Pythons:
-
-- 3.6
-- 3.7
-- 3.8
+This repo contains the frontend, backend, and learning libraries for retro.ai.
 
 Each game integration has files listing memory locations for in-game variables, reward functions based on those variables, episode end conditions, savestates at the beginning of levels and a file containing hashes of ROMs that work with these files.
 
-Please note that ROMs are not included and you must obtain them yourself.  Most ROM hashes are sourced from their respective No-Intro SHA-1 sums.
+Please note that ROMs are not included and you must obtain them yourself. Most ROM hashes are sourced from their respective No-Intro SHA-1 sums.
 
-# Documentation
+## Building
 
-Documentation is available at https://retro.readthedocs.io/en/latest/
+In the root folder, execute the following commands:
 
-You should probably start with the [Getting Started Guide](https://retro.readthedocs.io/en/latest/getting_started.html).
+```bash
+cmake .
+make -j$(nproc)
+```
 
-# Contributing
+To build the Cartesi backend, enter the `backend/` directory and run the following command:
 
-[See CONTRIBUTING.md](https://github.com/openai/retro/blob/master/CONTRIBUTING.md)
+```bash
+docker buildx bake -f docker-bake.hcl -f docker-bake.override.hcl --load
+```
 
-# Changelog
+## Testing
 
-[See CHANGES.md](https://github.com/openai/retro/blob/master/CHANGES.md)
+Once `make` has completed in the root folder, try running the two example learners:
 
-# Emulated Systems
+```bash
+./random_agent.py
+./brute_agent.py
+```
+
+## Repo layout
+
+The following subfolders compose the repo architecture:
+
+* `backend/` - The Cartesi Machine logic
+* `frontend/` - The website and frontend logic
+* `lib/` - The machine-independent emulator logic
+* `retroai/` - The experimental AI logic
+* `tools/` - Tooling for dependencies
+
+The following subfolders were left over from OpenAI and will be adapted for our needs:
+
+* `cores/` - Emulator source code (will be moved to depends)
+* `retro/` - Emulator data and generated build files (will be moved somewhere else)
+* `src/` - OpenAI C++ Gym Retro environment
+* `test/roms/` - Test ROMs from OpenAI
+* `third-party/` - Third party libraries for Gym Retro (will be moved to depends)
+
+## Emulated Systems
 
 - Atari
 	- Atari2600 (via Stella)
@@ -52,9 +64,9 @@ You should probably start with the [Getting Started Guide](https://retro.readthe
 	- Genesis/Mega Drive (via Genesis Plus GX)
 	- Master System (via Genesis Plus GX)
 
-See [LICENSES.md](https://github.com/openai/retro/blob/master/LICENSES.md) for information on the licenses of the individual cores.
+See [ThirdParty.md](LICENSES/ThirdParty.md) for information on the licenses of the individual cores.
 
-# Included ROMs
+## Included ROMs
 
 The following non-commercial ROMs are included with Gym Retro for testing purposes:
 
@@ -68,16 +80,3 @@ The following non-commercial ROMs are included with Gym Retro for testing purpos
 - [FamiCON intro](http://www.pouet.net/prod.php?which=53497) by dr88
 - [Airstriker](https://pdroms.de/genesis/airstriker-v1-50-genesis-game) by Electrokinesis
 - [Lost Marbles](https://pdroms.de/files/gameboyadvance/lost-marbles) by Vantage
-
-# Citation
-
-Please cite using the following BibTeX entry:
-
-```
-@article{nichol2018retro,
-  title={Gotta Learn Fast: A New Benchmark for Generalization in RL},
-  author={Nichol, Alex and Pfau, Vicki and Hesse, Christopher and Klimov, Oleg and Schulman, John},
-  journal={arXiv preprint arXiv:1804.03720},
-  year={2018}
-}
-```
