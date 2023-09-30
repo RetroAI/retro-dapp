@@ -137,3 +137,6 @@ retro/VERSION.txt
 Temporary
 *.mkv
 *.search
+
+# libzip build files
+/third-party/libzip
