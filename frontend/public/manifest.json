@@ -1,14 +1,15 @@
 {
-  "short_name": "retro.ai",
   "name": "retro.ai",
+  "short_name": "retro.ai",
+  "description": "The mission of retro.ai is to preserve human gaming history, and then train an AI to beat it.",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#ffffff",
   "icons": [
     {
       "src": "vite.svg",
       "type": "image/svg+xml"
     }
-  ],
-  "start_url": ".",
-  "display": "standalone",
-  "theme_color": "#ffffff",
-  "background_color": "#000000"
+  ]
 }

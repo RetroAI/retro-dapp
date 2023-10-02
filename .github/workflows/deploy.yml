@@ -52,5 +52,5 @@ jobs:
         git config user.name "GitHub Action"
         git config user.email "retro.gaming.ai@gmail.com"
         git add .
-        git commit -m "Deployed new build from retro-dapp repository"
+        git commit -m "Deployed new build from retro-dapp repository" || true
         git push https://${{secrets.GH_PAT}}@github.com/RetroAI/retroai.github.io.git main
