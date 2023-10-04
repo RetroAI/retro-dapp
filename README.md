@@ -14,6 +14,12 @@ To build the WASM dependencies, run the build script in the `tools/` directory:
 ./tools/build-depends.sh all
 ```
 
+To build the WASM libraries, run the build script in the `lib/` directory:
+
+```bash
+./lib/build-ci.sh
+```
+
 To build and run the website frontend, enter the `frontend/` directory and use standard yarn commands:
 
 ```bash

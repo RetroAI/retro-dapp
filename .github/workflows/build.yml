@@ -12,9 +12,11 @@ name: Build CI
 on:
   push:
     paths:
+      - 'lib/**'
       - 'tools/**'
   pull_request:
     paths:
+      - 'lib/**'
       - 'tools/**'
   schedule:
     - cron: '0 0 * * 0'
@@ -69,3 +71,6 @@ jobs:
       - name: Build depends
         if: steps.restore-depends.outputs.cache-hit != 'true'
         run: tools/build-depends.sh all
+
+      - name: Build libraries
+        run: lib/build-ci.sh
