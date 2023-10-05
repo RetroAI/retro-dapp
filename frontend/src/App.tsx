@@ -72,8 +72,6 @@ function App() {
             className="showNavbarButton"
             onClick={() => setIsNavbarVisible(true)}
             aria-label="Show Menu"
-            // Inline styles for additional assurance
-            style={{ background: "transparent", border: "none" }}
           >
             {/*
              * Show a hamburger icon to bring back the navbar menu

@@ -39,7 +39,7 @@ nav li a:hover {
   background: transparent !important; /* Using !important to avoid override by other styles */
   border: none !important; /* Remove border */
   cursor: pointer; /* Pointer cursor on hover */
-  padding: 8px; /* Adjust padding as needed */
+  padding: 8px; /* Adjust padding */
 }
 
 .hideNavbarButton {
@@ -48,8 +48,8 @@ nav li a:hover {
   border: none; /* Remove border */
   cursor: pointer; /* Pointer cursor on hover */
   padding: 8px; /* Add some padding */
-  font-size: 1.2rem; /* Adjust font-size as needed */
-  position: absolute; /* Positioning it */
+  font-size: 1.2rem; /* Adjust font-size */
+  position: absolute; /* Positioning */
   right: 0; /* Align to the right */
   top: 50%; /* Center vertically */
   transform: translateY(-50%); /* Centering adjustment */
