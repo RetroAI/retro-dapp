@@ -17,6 +17,9 @@
 # Directory for tooling
 TOOL_DIR = $(shell pwd)
 
+# Directory for dependency definitions
+DEPENDS_DIR = $(TOOL_DIR)/depends
+
 # Directory of stamps for tracking build progress
 STAMP_DIR = $(TOOL_DIR)/stamps
 

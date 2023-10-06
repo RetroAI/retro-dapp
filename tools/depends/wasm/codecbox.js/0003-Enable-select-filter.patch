@@ -1,0 +1,24 @@
+From 2b2406260b117af9dc08b66de42f1990c48cd842 Mon Sep 17 00:00:00 2001
+From: juztamau5 <juztamau5@gmail.com>
+Date: Sun, 26 Jul 2020 13:26:54 -0700
+Subject: [PATCH 3/3] Enable select filter
+
+---
+ Gruntfile.js | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Gruntfile.js b/Gruntfile.js
+index 35de85c..e1f615d 100644
+--- a/Gruntfile.js
++++ b/Gruntfile.js
+@@ -176,6 +176,7 @@ module.exports = function (grunt) {
+     'pad',
+     'rotate',
+     'scale',
++    'select',
+     'setdar',
+     'setsar',
+     'showinfo',
+-- 
+2.17.1
+

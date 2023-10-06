@@ -1,0 +1,35 @@
+From 4e97a5d5673d8e496634da9b2ba3b9ed1513c04e Mon Sep 17 00:00:00 2001
+From: juztamau5 <juztamau5@gmail.com>
+Date: Sat, 11 Jul 2020 11:03:54 -0700
+Subject: [PATCH 1/2] Fix error building OpenH264
+
+Error was:
+
+    codec/common/mips/copy_mb_mmi.c:94:35: error: invalid use of a cast in
+    a inline asm context requiring an l-value: remove the cast or build
+    with -fheinous-gnu-extensions
+
+    : [pDst]"+&r"((unsigned char *)pDst), [pSrc]"+&r"((unsigned char *)pSrc)
+                     ~~~~~~~~~~~~~~~~~^~~~
+---
+ Gruntfile.js | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/Gruntfile.js b/Gruntfile.js
+index 7f0d90d..123f403 100644
+--- a/Gruntfile.js
++++ b/Gruntfile.js
+@@ -251,8 +251,8 @@ module.exports = function (grunt) {
+     },
+     openh264: {
+       repo: 'https://github.com/cisco/openh264.git',
+-      make: 'emmake make SHELL="/bin/bash -x" ARCH=mips CFLAGS="-O3 -fno-stack-protector" -j' + 1, //paraMake,
+-      install: 'emmake make ARCH=mips PREFIX=' + distPath + ' install-headers install-shared',
++      make: 'emmake make USE_ASM=No SHELL="/bin/bash -x" ARCH=mips CFLAGS="-O3 -fno-stack-protector" -j' + 1, //paraMake,
++      install: 'emmake make USE_ASM=No ARCH=mips PREFIX=' + distPath + ' install-headers install-shared',
+     },
+     zlib: {
+       repo: 'https://github.com/madler/zlib.git',
+-- 
+2.20.1
+

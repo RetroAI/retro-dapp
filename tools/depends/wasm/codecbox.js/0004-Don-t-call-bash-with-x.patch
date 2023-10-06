@@ -1,0 +1,46 @@
+From e74a69bac5b0861ac22ce0b105a8457d66729a3b Mon Sep 17 00:00:00 2001
+From: juztamau5 <juztamau5@gmail.com>
+Date: Fri, 31 Jul 2020 20:43:59 -0700
+Subject: [PATCH 4/4] Don't call bash with -x
+
+---
+ Gruntfile.js | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/Gruntfile.js b/Gruntfile.js
+index e1f615d..1357ebe 100644
+--- a/Gruntfile.js
++++ b/Gruntfile.js
+@@ -240,7 +240,7 @@ module.exports = function (grunt) {
+       needPatch: false,
+       configure: 'emconfigure ./configure --prefix=' + distPath + ' --disable-examples --disable-docs ' +
+         ' --disable-runtime-cpu-detect --disable-multithread --target=generic-gnu --extra-cflags=-O3',
+-      make: 'emmake make SHELL="/bin/bash -x" -j' + paraMake,
++      make: 'emmake make SHELL="/bin/bash" -j' + paraMake,
+       postMake: 'emranlib libvpx.a', // https://github.com/emscripten-core/emscripten/issues/9705
+     },
+     x264: {
+@@ -248,17 +248,17 @@ module.exports = function (grunt) {
+       needPatch: false,
+       configure: 'emconfigure ./configure --disable-thread --disable-asm --disable-opencl ' +
+         ' --host=i686-pc-linux-gnu --disable-cli --enable-shared --disable-gpl --prefix=' + distPath,
+-      make: 'emmake make SHELL="/bin/bash -x" -j' + paraMake
++      make: 'emmake make SHELL="/bin/bash" -j' + paraMake
+     },
+     openh264: {
+       repo: 'https://github.com/cisco/openh264.git',
+-      make: 'emmake make USE_ASM=No SHELL="/bin/bash -x" ARCH=mips CFLAGS="-O3 -fno-stack-protector -s ERROR_ON_UNDEFINED_SYMBOLS=0" LDFLAGS="-s ERROR_ON_UNDEFINED_SYMBOLS=0" -j' + 1, //paraMake,
++      make: 'emmake make USE_ASM=No SHELL="/bin/bash" ARCH=mips CFLAGS="-O3 -fno-stack-protector -s ERROR_ON_UNDEFINED_SYMBOLS=0" LDFLAGS="-s ERROR_ON_UNDEFINED_SYMBOLS=0" -j' + 1, //paraMake,
+       install: 'emmake make USE_ASM=No ARCH=mips PREFIX=' + distPath + ' install-headers install-shared',
+     },
+     zlib: {
+       repo: 'https://github.com/madler/zlib.git',
+       configure: 'emconfigure ./configure --prefix=' + distPath + ' --static',
+-      make: 'emmake make CFLAGS="-O3" SHELL="/bin/bash -x" -j' + paraMake,
++      make: 'emmake make CFLAGS="-O3" SHELL="/bin/bash" -j' + paraMake,
+     },
+     ffmpeg: { 
+       repo: 'https://github.com/FFmpeg/FFmpeg.git',
+-- 
+2.17.1
+

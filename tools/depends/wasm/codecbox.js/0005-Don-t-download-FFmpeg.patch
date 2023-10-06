@@ -1,0 +1,29 @@
+From 031f2a2b50a187a68b130bf6da1f8d0d39de445e Mon Sep 17 00:00:00 2001
+From: juztamau5 <juztamau5@gmail.com>
+Date: Sat, 1 Aug 2020 12:33:14 -0700
+Subject: [PATCH 5/5] Don't download FFmpeg
+
+---
+ Gruntfile.js | 6 ------
+ 1 file changed, 6 deletions(-)
+
+diff --git a/Gruntfile.js b/Gruntfile.js
+index 1357ebe..e60efa9 100644
+--- a/Gruntfile.js
++++ b/Gruntfile.js
+@@ -260,12 +260,6 @@ module.exports = function (grunt) {
+       configure: 'emconfigure ./configure --prefix=' + distPath + ' --static',
+       make: 'emmake make CFLAGS="-O3" SHELL="/bin/bash" -j' + paraMake,
+     },
+-    ffmpeg: { 
+-      repo: 'https://github.com/FFmpeg/FFmpeg.git',
+-      // select your ffmpeg config
+-      configure: ffmpegCustomConfig,
+-      //configure: ffmpegFullConfig,
+-    },
+   };
+ 
+   var cloneDepth = 50;
+-- 
+2.17.1
+

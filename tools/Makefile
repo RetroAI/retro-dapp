@@ -57,7 +57,11 @@ SHELL := /bin/bash
 
 include depends/native/emscripten/package.mk
 include depends/wasm/ade/package.mk
+include depends/wasm/codecbox.js/package.mk
+include depends/wasm/ffmpeg/package.mk
+include depends/wasm/libvpx/package.mk
 include depends/wasm/opencv/package.mk
+include depends/wasm/x264/package.mk
 
 ################################################################################
 #
@@ -73,8 +77,12 @@ include depends/wasm/opencv/package.mk
 
 CHECKOUT_DEPENDS = \
   $(S)/checkout-ade \
+  $(S)/checkout-codecbox.js \
   $(S)/checkout-emscripten \
+  $(S)/checkout-ffmpeg \
+  $(S)/checkout-libvpx \
   $(S)/checkout-opencv \
+  $(S)/checkout-x264 \
   $(S)/patch-opencv \
 
 #
@@ -82,6 +90,7 @@ CHECKOUT_DEPENDS = \
 #
 
 BUILD_DEPENDS = \
+  $(S)/build-ffmpeg \
   $(S)/build-opencv \
 
 #
@@ -89,6 +98,7 @@ BUILD_DEPENDS = \
 #
 
 INSTALL_DEPENDS = \
+  $(S)/install-ffmpeg \
   $(S)/install-opencv \
 
 #
@@ -104,17 +114,33 @@ install: $(INSTALL_DEPENDS)
 #
 
 .PHONY: ade
+.PHONY: codecbox.js
 .PHONY: emscripten
+.PHONY: ffmpeg
+.PHONY: libvpx
 .PHONY: opencv
+.PHONY: x264
 
 ade: \
   $(S)/install-ade
 
+codecbox.js: \
+  $(S)/install-codecbox.js
+
 emscripten: \
   $(S)/build-emscripten
 
+ffmpeg: \
+  $(S)/install-ffmpeg
+
+libvpx: \
+  $(S)/install-libvpx
+
 opencv: \
   $(S)/install-opencv
+
+x264: \
+  $(S)/install-x264
 
 ################################################################################
 #

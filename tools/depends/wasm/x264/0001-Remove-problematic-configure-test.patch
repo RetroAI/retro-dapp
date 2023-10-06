@@ -1,0 +1,43 @@
+From 873a1c043a300aa214276e924f183d10a70a3249 Mon Sep 17 00:00:00 2001
+From: juztamau5 <juztamau5@gmail.com>
+Date: Sat, 11 Jul 2020 06:58:06 -0700
+Subject: [PATCH] Remove problematic configure test
+
+The test compiles a file and uses the "strings" program to search for
+text in the binary output.
+
+On 2020-06-05, a STRINGS parameter was added to configure that allows the
+caller to specify the path to the strings binary. This should be set to a
+version of "strings" that can search wasm files.
+
+See:
+
+    https://code.videolan.org/videolan/x264/-/commit/235ce6130168f4deee55c88ecda5ab84d81d125b
+---
+ configure | 10 ----------
+ 1 file changed, 10 deletions(-)
+
+diff --git a/configure b/configure
+index 78aa1140..14ca3f99 100755
+--- a/configure
++++ b/configure
+@@ -1015,16 +1015,6 @@ ASFLAGS="$ASFLAGS -DSTACK_ALIGNMENT=$stack_alignment"
+ 
+ # skip endianness check for Intel Compiler and MSVS, as all supported platforms are little. each have flags that will cause the check to fail as well
+ CPU_ENDIAN="little-endian"
+-if [ $compiler = GNU ]; then
+-    echo "int i[2] = {0x42494745,0}; double f[2] = {0x1.0656e6469616ep+102,0};" > conftest.c
+-    $CC $CFLAGS conftest.c -c -o conftest.o 2>/dev/null || die "endian test failed"
+-    if (${STRINGS} -a conftest.o | grep -q BIGE) && (${STRINGS} -a conftest.o | grep -q FPendian) ; then
+-        define WORDS_BIGENDIAN
+-        CPU_ENDIAN="big-endian"
+-    elif !(${STRINGS} -a conftest.o | grep -q EGIB && ${STRINGS} -a conftest.o | grep -q naidnePF) ; then
+-        die "endian test failed"
+-    fi
+-fi
+ 
+ if [ "$cli_libx264" = "system" -a "$shared" != "yes" ] ; then
+     [ "$static" = "yes" ] && die "Option --system-libx264 can not be used together with --enable-static"
+-- 
+2.20.1
+

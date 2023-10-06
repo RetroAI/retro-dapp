@@ -1,0 +1,25 @@
+#!/bin/bash
+################################################################################
+#
+#  Copyright (C) 2021-2023 retro.ai
+#  This file is part of retro-dapp - https://github.com/RetroAI/retro-dapp
+#
+#  SPDX-License-Identifier: Apache-2.0
+#  See the file LICENSE.md for more information.
+#
+################################################################################
+
+# Enable strict shell mode
+set -o errexit
+set -o nounset
+set -o pipefail
+
+# Get the absolute path to this script
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+# Set pkgconfig environment variables
+PKG_CONFIG_PATH="${SCRIPT_DIR}/dist/lib/pkgconfig"
+export PKG_CONFIG_PATH
+
+# Run pkgconfig
+exec /usr/bin/pkg-config "$@"

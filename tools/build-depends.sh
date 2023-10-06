@@ -33,6 +33,11 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 source "${SCRIPT_DIR}/build-paths.sh"
 
+function install_npm_utilies() {
+  cd "${SCRIPT_DIR}"
+  yarn install
+}
+
 #
 # Dispatch function
 #
@@ -61,6 +66,8 @@ function dispatch() {
 }
 
 function depends-all() {
+  install_npm_utilies
+
   # Dependencies to build
   BUILD_DEPENDS="emscripten "
 
@@ -71,18 +78,30 @@ function depends-all() {
     BUILD_DEPENDS+="opencv "
   fi
 
+  # Build FFmpeg
+  if [ ! -f "${DISTRIBUTION_LIB_DIR}/libavutil.a.a" ]; then
+    rm -f "${STAMP_DIR}/build-ffmpeg"
+    BUILD_DEPENDS+="ffmpeg "
+  fi
+
   make -C "${TOOL_DIR}" -j$(getconf _NPROCESSORS_ONLN) ${BUILD_DEPENDS}
 }
 
 function depends-checkout() {
+  install_npm_utilies
+
   make -C "${TOOL_DIR}" checkout -j10
 }
 
 function depends-build() {
+  install_npm_utilies
+
   make -C "${TOOL_DIR}" build -j$(getconf _NPROCESSORS_ONLN)
 }
 
 function depends-install() {
+  install_npm_utilies
+
   make -C "${TOOL_DIR}" install
 }
 

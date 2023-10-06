@@ -53,6 +53,11 @@ jobs:
       - name: Build environment information
         run: 'echo "Matrix OS: ${{ matrix.os }} on $HOSTNAME with $(getconf _NPROCESSORS_ONLN) cores"'
 
+      - name: Set git credentials
+        run: |
+          git config --global user.name "GitHub Action"
+          git config --global user.email "retro.gaming.ai@gmail.com"
+
         # Check-out the repository under $GITHUB_WORKSPACE, so the job can
         # access it
       - name: Checkout main repo
@@ -66,7 +71,7 @@ jobs:
             frontend/src/generated
             tools/dist
             tools/repos/emsdk
-          key: restore-depends-${{ matrix.os }}-${{ hashFiles('tools/depends/native/emscripten/*', 'tools/depends/wasm/ade/*', 'tools/depends/wasm/opencv/*') }}
+          key: restore-depends-${{ matrix.os }}-${{ hashFiles('tools/depends/native/emscripten/*', 'tools/depends/wasm/ade/*', 'tools/depends/wasm/codecbox.js/*', 'tools/depends/wasm/ffmpeg/*', 'tools/depends/wasm/libvpx/*', 'tools/depends/wasm/opencv/*', 'tools/depends/wasm/x264/*') }}
 
       - name: Build depends
         if: steps.restore-depends.outputs.cache-hit != 'true'

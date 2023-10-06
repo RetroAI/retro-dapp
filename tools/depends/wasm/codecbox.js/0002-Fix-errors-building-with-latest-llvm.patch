@@ -1,0 +1,43 @@
+From e7df34d0fcb6f2f3ebd924fd5afa372181a4e4c1 Mon Sep 17 00:00:00 2001
+From: juztamau5 <juztamau5@gmail.com>
+Date: Sun, 12 Jul 2020 20:16:28 -0700
+Subject: [PATCH 2/2] Fix errors building with latest llvm
+
+Errors were:
+
+[lame]
+
+>> error: undefined symbol: popen (referenced by top-level compiled C/C++ code)
+
+[openh264]
+
+>> error: undefined symbol: pthread_attr_setscope (referenced by top-level compiled C/C++ code)
+---
+ Gruntfile.js | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/Gruntfile.js b/Gruntfile.js
+index 123f403..35de85c 100644
+--- a/Gruntfile.js
++++ b/Gruntfile.js
+@@ -231,7 +231,7 @@ module.exports = function (grunt) {
+     },
+     lame: {
+       repo: 'https://github.com/rbrito/lame.git',
+-      configure: 'emconfigure ./configure CFLAGS=-O3 --prefix=' + distPath + ' --enable-shared=no --disable-gtktest ' +
++      configure: 'emconfigure ./configure CFLAGS="-O3 -s ERROR_ON_UNDEFINED_SYMBOLS=0" --prefix=' + distPath + ' --enable-shared=no --disable-gtktest ' +
+         ' --disable-decoder --disable-cpml',
+     },
+     libvpx: {
+@@ -251,7 +251,7 @@ module.exports = function (grunt) {
+     },
+     openh264: {
+       repo: 'https://github.com/cisco/openh264.git',
+-      make: 'emmake make USE_ASM=No SHELL="/bin/bash -x" ARCH=mips CFLAGS="-O3 -fno-stack-protector" -j' + 1, //paraMake,
++      make: 'emmake make USE_ASM=No SHELL="/bin/bash -x" ARCH=mips CFLAGS="-O3 -fno-stack-protector -s ERROR_ON_UNDEFINED_SYMBOLS=0" LDFLAGS="-s ERROR_ON_UNDEFINED_SYMBOLS=0" -j' + 1, //paraMake,
+       install: 'emmake make USE_ASM=No ARCH=mips PREFIX=' + distPath + ' install-headers install-shared',
+     },
+     zlib: {
+-- 
+2.20.1
+
