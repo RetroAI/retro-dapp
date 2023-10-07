@@ -3,6 +3,8 @@
 
 # Generated libraries
 /frontend/public/motion_tracker
+/frontend/public/stream_decoder.*
+/frontend/public/stream_encoder.*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
