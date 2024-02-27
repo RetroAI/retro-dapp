@@ -1,0 +1,13 @@
+# Sunodo build files
+/.sunodo
+
+# Editor directories and files
+*.njsproj
+*.ntvs*
+*.sln
+*.suo
+*.sw?
+.DS_Store
+.idea
+.vscode/*
+!.vscode/extensions.json

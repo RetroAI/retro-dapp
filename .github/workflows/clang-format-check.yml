@@ -1,0 +1,35 @@
+################################################################################
+#
+#  Copyright (C) 2024 retro.ai
+#  This file is part of retro3 - https://github.com/retroai/retro3
+#
+#  SPDX-License-Identifier: AGPL-3.0-or-later
+#  See the file LICENSE.txt for more information.
+#
+################################################################################
+
+name: Clang Format Check
+
+on: [push, pull_request]
+
+jobs:
+  format:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-22.04
+
+    defaults:
+      run:
+        # Set the working directory to src folder
+        working-directory: src
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install Clang Format
+      run: sudo apt-get install -y clang-format-15
+
+    - name: Run Clang Format
+      run: |
+        find . -regex '.*\.\(cpp\|hpp\)' -exec clang-format-15 -style=file -i {} \;
+        git diff --exit-code --color
