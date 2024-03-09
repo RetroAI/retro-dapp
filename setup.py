@@ -90,7 +90,6 @@ setup(
         'retro.data.experimental': platform_globs,
         'retro.data.contrib': platform_globs,
     },
-    extras_require={'docs': ['sphinx', 'sphinx_rtd_theme', 'sphinx-autobuild', 'm2r']},
     setup_requires=['setuptools_scm'],
     use_scm_version=use_scm_version,
     **kwargs
