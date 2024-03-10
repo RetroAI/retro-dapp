@@ -1,0 +1,108 @@
+<!doctype html>
+<html
+  lang="en-US"
+  xml:lang="en-US"
+  xmlns="http://www.w3.org/1999/xhtml"
+  prefix="og: http://ogp.me/ns#"
+  xmlns:og="http://ogp.me/ns#"
+>
+  <head>
+    <title>retro.ai</title>
+
+    <meta charset="UTF-8" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://retro.ai/" />
+    <meta
+      property="og:title"
+      content="retro.ai - Preserving Gaming History for AI to beat"
+    />
+    <meta
+      property="og:description"
+      content="retro.ai is dedicated to preserving human gaming history, and training an AI to beat it."
+    />
+    <meta property="og:image" content="https://retro.ai/icon.png" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://retro.ai/" />
+    <meta
+      property="twitter:title"
+      content="retro.ai - Preserving Gaming History for AI to beat"
+    />
+    <meta
+      property="twitter:description"
+      content="retro.ai is dedicated to preserving human gaming history, and training an AI to beat it."
+    />
+    <meta property="twitter:image" content="https://retro.ai/icon.png" />
+
+    <!-- Link the favicons -->
+    <link rel="icon" type="image/webp" href="/icon.webp" />
+    <link rel="icon" type="image/png" href="/icon.png" />
+
+    <!-- Add Apple Touch icon (when an iOS device adds the site to their home screen) -->
+    <link rel="apple-touch-icon" sizes="1024x1024" href="/icon.png" />
+
+    <!-- Viewporting -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Link the web app manifest for usage as a Progressive Web App (PWA) -->
+    <link
+      rel="manifest"
+      type="application/manifest+json"
+      href="/manifest.json"
+    />
+
+    <!-- Start Single Page Apps for GitHub Pages -->
+    <script type="text/javascript">
+      // Single Page Apps for GitHub Pages
+      //
+      // MIT License
+      // https://github.com/rafgraph/spa-github-pages
+      //
+      // This script checks to see if a redirect is present in the query string,
+      // converts it back into the correct url and adds it to the
+      // browser's history using window.history.replaceState(...),
+      // which won't cause the browser to attempt to load the new url.
+      // When the single page app is loaded further down in this file,
+      // the correct url will be waiting in the browser's history for
+      // the single page app to route accordingly.
+      (function (l) {
+        if (l.search[1] === "/") {
+          var decoded = l.search
+            .slice(1)
+            .split("&")
+            .map(function (s) {
+              return s.replace(/~and~/g, "&");
+            })
+            .join("?");
+          window.history.replaceState(
+            null,
+            null,
+            l.pathname.slice(0, -1) + decoded + l.hash,
+          );
+        }
+      })(window.location);
+    </script>
+    <!-- End Single Page Apps for GitHub Pages -->
+
+    <!-- Prevent white flashes by starting with a black background -->
+    <!--
+    <style type="text/css">
+      body {
+        background: #000000;
+      }
+    </style>
+    -->
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+
+    <!-- React will attach to this div -->
+    <div id="root" />
+
+    <!-- Vite entry point -->
+    <script type="module" src="/src/index.tsx"></script>
+  </body>
+</html>
