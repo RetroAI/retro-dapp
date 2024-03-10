@@ -1,0 +1,15 @@
+/*
+ * Copyright (C) 2023-2024 retro.ai
+ * This file is part of retro3 - https://github.com/retroai/retro3
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ * See the file LICENSE.txt for more information.
+ */
+
+.blankPageContainer {
+  background-color: #8b3d3d; /* Retro shade of red */
+  height: 100vh;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}

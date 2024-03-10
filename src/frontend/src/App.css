@@ -1,0 +1,56 @@
+/*
+ * Copyright (C) 2023-2024 retro.ai
+ * This file is part of retro3 - https://github.com/retroai/retro3
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ * See the file LICENSE.txt for more information.
+ */
+
+nav ul {
+  position: relative;
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: #333;
+}
+
+nav li {
+  float: left;
+}
+
+nav li a {
+  display: block;
+  color: white;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+}
+
+nav li a:hover {
+  background-color: #111;
+}
+
+/*
+ * The following should ensure the button has no background, no border, and
+ * the SVG should be visible
+ */
+.showNavbarButton {
+  background: transparent !important; /* Using !important to avoid override by other styles */
+  border: none !important; /* Remove border */
+  cursor: pointer; /* Pointer cursor on hover */
+  padding: 8px; /* Adjust padding */
+}
+
+.hideNavbarButton {
+  background-color: transparent; /* Transparent background */
+  color: #ffffff; /* White arrow */
+  border: none; /* Remove border */
+  cursor: pointer; /* Pointer cursor on hover */
+  padding: 8px; /* Add some padding */
+  font-size: 1.2rem; /* Adjust font-size */
+  position: absolute; /* Positioning */
+  right: 0; /* Align to the right */
+  top: 50%; /* Center vertically */
+  transform: translateY(-50%); /* Centering adjustment */
+}
