@@ -59,6 +59,7 @@ The following subfolders compose the repo architecture:
 
 * `src/backend/` - The Cartesi Machine logic
 * `src/frontend/` - The website and frontend logic
+* `src/engine/` - The main emulator engine
 * `src/learning/` - The Python code for AI agents
 * `tools/` - Tooling for dependencies
 

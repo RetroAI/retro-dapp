@@ -1,0 +1,109 @@
+################################################################################
+#
+#  Copyright (C) 2023-2024 retro.ai
+#  This file is part of retro3 - https://github.com/retroai/retro3
+#
+#  SPDX-License-Identifier: AGPL-3.0-or-later
+#  See the file LICENSE.txt for more information.
+#
+################################################################################
+
+name: Node.js CI
+
+on: [push, pull_request]
+
+jobs:
+  build-and-deploy:
+    # The type of runner that the job will run on
+    runs-on: ${{ matrix.os }}
+
+    defaults:
+      run:
+        # Set the working directory to frontend folder
+        working-directory: src/frontend
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-20.04
+            node-version: 20
+          - os: ubuntu-22.04
+            node-version: 21
+
+    steps:
+    - name: Checkout 🛎️
+      uses: actions/checkout@v4
+
+    - name: Cache vite build files
+      id: cache-vite
+      uses: actions/cache@v4
+      with:
+        path: |
+          src/frontend/dist
+        key: cache-vite-${{ matrix.os }}-${{ matrix.node-version }}-${{ hashFiles('src/frontend/**') }}
+
+    - name: Cache pnpm modules
+      id: cache-modules
+      uses: actions/cache@v4
+      with:
+        path: |
+          src/frontend/node_modules
+        key: cache-modules-${{ matrix.os }}-${{ matrix.node-version }}-${{ hashFiles('src/frontend/pnpm-lock.yaml') }}
+
+    - name: Cache emsdk
+      id: cache-emsdk
+      uses: actions/cache@v4
+      with:
+        path: |
+          tools/emsdk
+        key: cache-emsdk-${{ hashFiles('tools/download-emscripten.sh') }}
+
+    - name: Cache WASM libraries
+      id: cache-wasm
+      uses: actions/cache@v4
+      with:
+        path: |
+          src/frontend/public/wasm
+          src/frontend/src/wasm
+        key: cache-wasm-${{ matrix.os }}-${{ matrix.node-version }}-${{ hashFiles('src/engine/**', 'tools/build-wasm.sh', 'tools/download-emscripten.sh') }}
+
+    - name: Install emsdk
+      if: steps.cache-emsdk.outputs.cache-hit != 'true'
+      run: |
+        ./download-emscripten.sh
+      working-directory: tools
+
+    - name: Build wasm libraries
+      if: steps.cache-wasm.outputs.cache-hit != 'true'
+      run: |
+        ./build-wasm.sh
+      working-directory: tools
+
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: Install pnpm
+      run: |
+        npm install -g pnpm
+
+    - name: pnpm install
+      if: steps.cache-modules.outputs.cache-hit != 'true'
+      run: |
+        pnpm install
+
+    - name: pnpm audit-ci
+      run: |
+        pnpm audit-ci
+
+    - name: pnpm lint
+      if: steps.cache-vite.outputs.cache-hit != 'true'
+      run: |
+        pnpm lint
+
+    - name: pnpm build
+      if: steps.cache-vite.outputs.cache-hit != 'true'
+      run: |
+        pnpm build

@@ -1,0 +1,14 @@
+/*
+ * Copyright (C) 2023-2024 retro.ai
+ * This file is part of retro3 - https://github.com/retroai/retro3
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ * See the file LICENSE.txt for more information.
+ */
+
+/* Reset CSS */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}

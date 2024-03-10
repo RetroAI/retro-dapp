@@ -1,0 +1,70 @@
+{
+  "name": "retro3",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Website for retro.ai",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RetroAI/retro-dapp.git"
+  },
+  "homepage": "https://retroai.github.io",
+  "bugs": {
+    "url": "https://github.com/RetroAI/retro-dapp/issues"
+  },
+  "author": "retro.ai <retro.gaming.ai@gmail.com>",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "keywords": [
+    "ai",
+    "arcade",
+    "defi",
+    "entertainment",
+    "games",
+    "nft",
+    "retro"
+  ],
+  "scripts": {
+    "audit-ci": "audit-ci --config audit-ci.json",
+    "build": "tsc && vite build",
+    "clean": "rimraf dist node_modules yarn-*.log*",
+    "deploy": "gh-pages --branch main --repo git@github.com:retroai/retroai.github.io.git --dist dist --dotfiles",
+    "start": "vite",
+    "format": "prettier --write . && eslint --fix .",
+    "lint": "prettier --check . && eslint .",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:ui": "vitest --ui"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.22.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.25",
+    "@types/react": "^18.2.64",
+    "@types/react-dom": "^18.2.21",
+    "@types/react-router-dom": "^5.3.3",
+    "@types/three": "^0.162.0",
+    "@typescript-eslint/eslint-plugin": "^7.1.1",
+    "@typescript-eslint/parser": "^7.1.1",
+    "@vitejs/plugin-react": "^4.2.1",
+    "@vitest/ui": "^1.3.1",
+    "audit-ci": "^6.6.1",
+    "eslint": "^8.57.0",
+    "eslint-plugin-prettier": "^5.1.3",
+    "eslint-plugin-simple-import-sort": "^12.0.0",
+    "gh-pages": "^6.1.1",
+    "prettier": "^3.2.5",
+    "prettier-plugin-pkg": "^0.18.1",
+    "rimraf": "^5.0.5",
+    "typescript": "^5.4.2",
+    "vite": "^5.1.5",
+    "vitest": "^1.3.1"
+  },
+  "bundleDependencies": false,
+  "target": "web"
+}
