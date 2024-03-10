@@ -91,6 +91,5 @@ setup(
         'retro.data.contrib': platform_globs,
     },
     setup_requires=['setuptools_scm'],
-    use_scm_version=use_scm_version,
     **kwargs
 )

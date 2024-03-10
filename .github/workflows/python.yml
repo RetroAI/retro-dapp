@@ -1,0 +1,97 @@
+################################################################################
+#
+#  Copyright (C) 2024 retro.ai
+#  This file is part of retro3 - https://github.com/retroai/retro3
+#
+#  SPDX-License-Identifier: AGPL-3.0-or-later
+#  See the file LICENSE.txt for more information.
+#
+################################################################################
+
+name: Python CI
+
+on: [push, pull_request]
+
+jobs:
+  build-and-deploy:
+    # The type of runner that the job will run on
+    runs-on: ${{ matrix.os }}
+
+    defaults:
+      run:
+        # Set the working directory to frontend folder
+        working-directory: src/learning
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-20.04
+            python-version: '3.10'
+          - os: ubuntu-22.04
+            python-version: '3.12'
+
+    steps:
+    - name: Checkout 🛎️
+      uses: actions/checkout@v4
+
+    - name: Cache OpenAI modules
+      id: cache-openai
+      uses: actions/cache@v4
+      with:
+        path: openai
+        key: cache-openai-${{ matrix.os }}-${{ matrix.python-version }}-${{ hashFiles('openai/**') }}
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install OpenAI dependencies
+      if: steps.cache-openai.outputs.cache-hit != 'true'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential \
+          cmake \
+          libgtest-dev
+        python3 -m pip install --upgrade pip setuptools setuptools_scm
+
+    - name: Build OpenAI modules
+      if: steps.cache-openai.outputs.cache-hit != 'true'
+      run: |
+        cd ../../openai
+        cmake .
+        make -j
+
+    - name: Install poetry
+      run: |
+        curl -sSL https://install.python-poetry.org | python3 -
+
+    - name: Configure Poetry
+      run: |
+        poetry config virtualenvs.create false
+
+    - name: Install Python dependencies
+      run: |
+        poetry install
+
+    - name: Check formatting with Black
+      run: |
+        poetry run black --check .
+
+    - name: Lint with Flake8
+      run: |
+        poetry run flake8 .
+
+    - name: Sort imports with isort
+      run: |
+        poetry run isort . --check-only
+
+    - name: Type check with mypy
+      run: |
+        poetry run mypy . --check-untyped-defs
+
+    - name: Run test cases
+      run: |
+        poetry run pytest

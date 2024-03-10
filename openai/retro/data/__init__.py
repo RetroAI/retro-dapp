@@ -10,7 +10,7 @@ try:
     from enum import Flag
 except ImportError:
     # Python < 3.6 doesn't support Flag, so we polyfill it ourself
-    class Flag(enum.Enum):
+    class Flag(enum.Enum):  # type: ignore
         def __and__(self, b):
             value = self.value & b.value
             try:

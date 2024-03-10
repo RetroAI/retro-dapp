@@ -1,0 +1,10 @@
+{
+  "name": "retro3-meta",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "npm run build:openai",
+    "build:openai": "cd openai && cmake . && make -j",
+    "clean": "npm run clean:openai",
+    "clean:openai": "cd openai && (git clean -xdf . || true)"
+  }
+}

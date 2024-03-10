@@ -25,6 +25,7 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 option(BUILD_LUAJIT "Should static LuaJIT be used instead of system Lua" ON)
 option(BUILD_MANYLINUX "Should use static libraries compatible with manylinux1" OFF)
+option(BUILD_TESTING "Should build tests" OFF)
 
 set(BUILD_PYTHON ON CACHE BOOL "Build Python module")
 mark_as_advanced(BUILD_PYTHON)

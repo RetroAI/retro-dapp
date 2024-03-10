@@ -1,0 +1,63 @@
+################################################################################
+#
+#  Copyright (C) 2024 retro.ai
+#  This file is part of retro3 - https://github.com/retroai/retro3
+#
+#  SPDX-License-Identifier: AGPL-3.0-or-later
+#  See the file LICENSE.txt for more information.
+#
+################################################################################
+
+[tool.poetry]
+name = "retroai"
+version = "1.0.0"
+description = "A simple example for learning agents"
+authors = ["juztamau5 <juztamau5@gmail.com>"]
+license = "AGPL-3.0-or-later"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+gymnasium = "^0.29.1"
+numpy = "^1.26.4"
+python = "^3.10"
+
+[tool.poetry.group.dev.dependencies]
+black = "^24.2.0"
+flake8 = "^7.0.0"
+flake8-pyproject = "^1.2.3"
+isort = "^5.13.2"
+mypy = "^1.9.0"
+pytest = "^8.1.1"
+
+[tool.poetry.scripts]
+ci = "test.run_ci_tasks:main"
+format = "test.run_ci_tasks:format"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 80
+
+[tool.isort]
+profile = "black"
+
+[tool.flake8]
+max-line-length = 80
+ignore = [
+    # Module level import not at top of file
+    "E402",
+
+    # Line too long (line length is managed by black)
+    "E501",
+
+    # Whitespace before ':' (conflicts with black)
+    "E203",
+
+    # Line break occurred before a binary operator (conflicts with PEP 8 recommendation)
+    "W503",
+]
+
+[tool.mypy]
+ignore_missing_imports = true
