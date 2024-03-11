@@ -51,6 +51,22 @@ jobs:
           src/frontend/node_modules
         key: cache-modules-${{ matrix.os }}-${{ matrix.node-version }}-${{ hashFiles('src/frontend/pnpm-lock.yaml') }}
 
+    - name: Cache emsdk
+      id: cache-emsdk
+      uses: actions/cache@v4
+      with:
+        path: |
+          tools/emsdk
+        key: cache-emsdk-${{ hashFiles('tools/download-emscripten.sh') }}
+
+    - name: Cache WASM libraries
+      id: cache-wasm
+      uses: actions/cache@v4
+      with:
+        path: |
+          src/frontend/public/wasm
+        key: cache-wasm-${{ matrix.os }}-${{ matrix.node-version }}-${{ hashFiles('src/engine/**', 'tools/build-wasm.sh', 'tools/download-emscripten.sh') }}
+
     - name: Setup Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
       with:
@@ -78,3 +94,15 @@ jobs:
       if: steps.cache-vite.outputs.cache-hit != 'true'
       run: |
         pnpm build
+
+    - name: Install emsdk
+      if: steps.cache-emsdk.outputs.cache-hit != 'true'
+      run: |
+        ./download-emscripten.sh
+      working-directory: tools
+
+    - name: Build wasm libraries
+      if: steps.cache-wasm.outputs.cache-hit != 'true'
+      run: |
+        ./build-wasm.sh
+      working-directory: tools
