@@ -38,6 +38,54 @@ COPY src/backend .
 RUN make
 
 #
+# builder2
+#
+
+FROM --platform=linux/riscv64 riscv64/ubuntu:22.04 as builder2
+
+# Install OpanAI dependencies
+RUN <<EOF
+set -e
+apt-get update
+apt-get install -y --no-install-recommends \
+  build-essential \
+  cmake \
+  git \
+  libgtest-dev \
+  liblua5.1-dev \
+  lua5.1 \
+  python3 \
+  python3-dev \
+  python3-pip
+rm -rf /var/lib/apt/lists/*
+EOF
+RUN python3 -m pip install --upgrade pip setuptools setuptools_scm
+
+# Build OpenAI modules
+WORKDIR /opt/cartesi/dapp/openai
+COPY openai .
+RUN cmake . -DBUILD_LUAJIT=OFF
+RUN make -j8
+
+# Install learning dependencies
+RUN <<EOF
+set -e
+apt-get update
+apt-get install -y --no-install-recommends \
+  autoconf \
+  automake \
+  ninja-build
+rm -rf /var/lib/apt/lists/*
+EOF
+RUN python3 -m pip install --upgrade \
+  gymnasium \
+  numpy
+
+# Copy learning modules
+WORKDIR /opt/cartesi/dapp/src/learning
+COPY src/learning .
+
+#
 # host
 #
 
@@ -60,5 +108,6 @@ ENV PATH="/opt/cartesi/bin:${PATH}"
 
 WORKDIR /opt/cartesi/dapp
 COPY --from=builder /opt/cartesi/dapp/dapp .
+COPY --from=builder2 /opt/cartesi/dapp/dapp temp
 
 ENTRYPOINT ["/opt/cartesi/dapp/dapp"]
