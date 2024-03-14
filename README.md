@@ -1,6 +1,6 @@
 # retro3
 
-This repo contains the frontend, backend, and learning libraries for https://retro.ai.
+This repo contains the frontend, backend, and learning libraries for https://retro.ai. retro.ai is dedicated to preserving human gaming history, and then training an AI to beat it.
 
 Each game integration has files listing memory locations for in-game variables, reward functions based on those variables, episode end conditions, savestates at the beginning of levels and a file containing hashes of ROMs that work with these files.
 
